@@ -1,0 +1,48 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+header {
+    text-align: center;
+    background-color: #f4f4f4;
+    padding: 15px;
+}
+
+.banner {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+}
+
+nav {
+    text-align: center;
+    margin: 10px;
+}
+
+button {
+    padding: 10px 15px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.content {
+    display: none;
+    padding: 20px;
+}
+
+.item {
+    display: inline-block;
+    margin: 15px;
+    text-align: center;
+}
+
+.item img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
+
+.order-item {
+    margin: 10px 0;
+}

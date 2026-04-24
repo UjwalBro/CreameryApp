@@ -1,0 +1,29 @@
+[
+  {
+    "items": [
+      {
+        "name": "Milk",
+        "qty": 1,
+        "price": 5
+      }
+    ],
+    "total": 5,
+    "time": "2026-04-24T02:41:39.037Z"
+  },
+  {
+    "items": [
+      {
+        "name": "Milk",
+        "qty": 1,
+        "price": 5
+      },
+      {
+        "name": "Ice Cream",
+        "qty": 2,
+        "price": 14
+      }
+    ],
+    "total": 19,
+    "time": "2026-04-24T02:45:44.399Z"
+  }
+]

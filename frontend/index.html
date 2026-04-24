@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Country View Creamery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>COUNTRY VIEW CREAMERY</h1>
+    <img src="images/banner.jpg" alt="Banner" class="banner">
+</header>
+
+<nav>
+    <button onclick="showSection('about')">About Us</button>
+    <button onclick="showSection('menu')">Menu</button>
+    <button onclick="showSection('order')">Order Here</button>
+    <button onclick="showSection('cart')">View Cart</button>
+</nav>
+
+<!-- ABOUT -->
+<section id="about" class="content">
+    <h2>About Us</h2>
+    <p>Welcome to Country View Creamery. We provide fresh dairy products and homemade food.</p>
+</section>
+
+<!-- MENU -->
+<section id="menu" class="content">
+    <h2>Menu</h2>
+
+    <div class="item">
+        <img src="images/milk.jpg">
+        <p>Milk - $5</p>
+    </div>
+
+    <div class="item">
+        <img src="images/icecream.jpg">
+        <p>Ice Cream - $7</p>
+    </div>
+
+    <div class="item">
+        <img src="images/cheese.jpg">
+        <p>Cheese - $6</p>
+    </div>
+
+    <div class="item">
+        <img src="images/yogurt.jpg">
+        <p>Yogurt - $4</p>
+    </div>
+
+    <div class="item">
+        <img src="images/sandwich.jpg">
+        <p>Sandwich - $8</p>
+    </div>
+</section>
+
+<!-- ORDER -->
+<section id="order" class="content">
+    <h2>Order Here</h2>
+
+    <form id="orderForm">
+
+        <div class="order-item">
+            <input type="checkbox" id="milk">
+            <label>Milk ($5)</label>
+            <input type="number" id="milkQty" placeholder="Qty" min="1">
+        </div>
+
+        <div class="order-item">
+            <input type="checkbox" id="icecream">
+            <label>Ice Cream ($7)</label>
+            <input type="number" id="icecreamQty" placeholder="Qty" min="1">
+        </div>
+
+        <div class="order-item">
+            <input type="checkbox" id="cheese">
+            <label>Cheese ($6)</label>
+            <input type="number" id="cheeseQty" placeholder="Qty" min="1">
+        </div>
+
+        <div class="order-item">
+            <input type="checkbox" id="yogurt">
+            <label>Yogurt ($4)</label>
+            <input type="number" id="yogurtQty" placeholder="Qty" min="1">
+        </div>
+
+        <div class="order-item">
+            <input type="checkbox" id="sandwich">
+            <label>Sandwich ($8)</label>
+            <input type="number" id="sandwichQty" placeholder="Qty" min="1">
+        </div>
+
+        <br>
+        <button type="button" onclick="submitOrder()">Submit Order</button>
+
+    </form>
+</section>
+
+<!-- CART -->
+<section id="cart" class="content">
+    <h2>Your Cart</h2>
+    <ul id="cartItems"></ul>
+	<button onclick="loadOrders()">Load Previous Orders</button>
+    <h3 id="totalPrice">Total: $0</h3>
+</section>
+
+<script>
+
+let cart = [];
+
+const prices = {
+    milk: 5,
+    icecream: 7,
+    cheese: 6,
+    yogurt: 4,
+    sandwich: 8
+};
+
+/* =========================
+   STEP 1: ADD ITEMS TO CART
+========================= */
+function addItem(id, name) {
+    let checkbox = document.getElementById(id);
+    let qtyInput = document.getElementById(id + "Qty");
+
+    if (checkbox.checked) {
+        let qty = parseInt(qtyInput.value);
+
+        if (!qty || qty <= 0) return;
+
+        let price = prices[id] * qty;
+
+        cart.push({
+            name: name,
+            qty: qty,
+            price: price
+        });
+    }
+}
+
+/* =========================
+   STEP 2: UPDATE CART UI
+========================= */
+function updateCart() {
+    let cartList = document.getElementById("cartItems");
+    let total = 0;
+
+    cartList.innerHTML = "";
+
+    cart.forEach(item => {
+        let li = document.createElement("li");
+        li.textContent = item.name + " x" + item.qty + " = $" + item.price;
+        cartList.appendChild(li);
+        total += item.price;
+    });
+
+    document.getElementById("totalPrice").textContent = "Total: $" + total;
+}
+
+/* =========================
+   STEP 3: SHOW SECTIONS
+========================= */
+function showSection(sectionId) {
+    let sections = document.querySelectorAll('.content');
+    sections.forEach(sec => sec.style.display = 'none');
+
+    document.getElementById(sectionId).style.display = 'block';
+}
+
+/* =========================
+   STEP 4: SEND TO BACKEND
+========================= */
+function sendOrderToBackend(orderData) {
+    fetch("http://localhost:3000/orders", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            items: orderData,
+            total: orderData.reduce((sum, item) => sum + item.price, 0),
+            time: new Date()
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("Saved to backend:", data);
+    })
+    .catch(err => {
+        console.error("Error sending order:", err);
+    });
+}
+
+/* =========================
+   STEP 5: MAIN ORDER FUNCTION
+========================= */
+function submitOrder() {
+
+    // reset cart every time
+    cart = [];
+
+    // build cart
+    addItem('milk', 'Milk');
+    addItem('icecream', 'Ice Cream');
+    addItem('cheese', 'Cheese');
+    addItem('yogurt', 'Yogurt');
+    addItem('sandwich', 'Sandwich');
+
+    if (cart.length === 0) {
+        alert("Please select at least one item");
+        return;
+    }
+
+    // update UI
+    updateCart();
+
+    // send to backend
+    sendOrderToBackend(cart);
+
+    alert("Order submitted to backend!");
+    showSection('cart');
+}
+function loadOrders() {
+    fetch("http://localhost:3000/orders")
+    .then(res => res.json())
+    .then(data => {
+        let cartList = document.getElementById("cartItems");
+        cartList.innerHTML = "";
+
+        data.forEach((order, index) => {
+            let li = document.createElement("li");
+            li.textContent = 
+                "Order " + (index + 1) + " | Total: $" + order.total;
+            cartList.appendChild(li);
+        });
+    })
+    .catch(err => {
+        console.error("Error loading orders:", err);
+    });
+}
+/* =========================
+   STEP 6: DEFAULT VIEW
+========================= */
+showSection('about');
+
+</script>
+
+</body>
+</html>
