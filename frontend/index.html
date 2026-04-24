@@ -60,50 +60,53 @@
 <section id="order" class="content">
     <h2>Order Here</h2>
 
-    <form id="orderForm">
+    <div class="order-item">
+        <input type="checkbox" id="milk">
+        <label>Milk ($5)</label>
+        <input type="number" id="milkQty" min="1">
+    </div>
 
-        <div class="order-item">
-            <input type="checkbox" id="milk">
-            <label>Milk ($5)</label>
-            <input type="number" id="milkQty" placeholder="Qty" min="1">
-        </div>
+    <div class="order-item">
+        <input type="checkbox" id="icecream">
+        <label>Ice Cream ($7)</label>
+        <input type="number" id="icecreamQty" min="1">
+    </div>
 
-        <div class="order-item">
-            <input type="checkbox" id="icecream">
-            <label>Ice Cream ($7)</label>
-            <input type="number" id="icecreamQty" placeholder="Qty" min="1">
-        </div>
+    <div class="order-item">
+        <input type="checkbox" id="cheese">
+        <label>Cheese ($6)</label>
+        <input type="number" id="cheeseQty" min="1">
+    </div>
 
-        <div class="order-item">
-            <input type="checkbox" id="cheese">
-            <label>Cheese ($6)</label>
-            <input type="number" id="cheeseQty" placeholder="Qty" min="1">
-        </div>
+    <div class="order-item">
+        <input type="checkbox" id="yogurt">
+        <label>Yogurt ($4)</label>
+        <input type="number" id="yogurtQty" min="1">
+    </div>
 
-        <div class="order-item">
-            <input type="checkbox" id="yogurt">
-            <label>Yogurt ($4)</label>
-            <input type="number" id="yogurtQty" placeholder="Qty" min="1">
-        </div>
+    <div class="order-item">
+        <input type="checkbox" id="sandwich">
+        <label>Sandwich ($8)</label>
+        <input type="number" id="sandwichQty" min="1">
+    </div>
 
-        <div class="order-item">
-            <input type="checkbox" id="sandwich">
-            <label>Sandwich ($8)</label>
-            <input type="number" id="sandwichQty" placeholder="Qty" min="1">
-        </div>
-
-        <br>
-        <button type="button" onclick="submitOrder()">Submit Order</button>
-
-    </form>
+    <br>
+    <button type="button" onclick="submitOrder()">Submit Order</button>
 </section>
 
 <!-- CART -->
 <section id="cart" class="content">
     <h2>Your Cart</h2>
+
     <ul id="cartItems"></ul>
-	<button onclick="loadOrders()">Load Previous Orders</button>
     <h3 id="totalPrice">Total: $0</h3>
+
+    <hr>
+
+    <button onclick="loadOrders()">Load Previous Orders</button>
+
+    <h3>Previous Orders</h3>
+    <ul id="previousOrders"></ul>
 </section>
 
 <script>
@@ -118,132 +121,109 @@ const prices = {
     sandwich: 8
 };
 
-/* =========================
-   STEP 1: ADD ITEMS TO CART
-========================= */
+/* NAVIGATION */
+function showSection(id) {
+    document.querySelectorAll(".content").forEach(s => s.style.display = "none");
+    document.getElementById(id).style.display = "block";
+}
+
+/* ADD ITEM */
 function addItem(id, name) {
     let checkbox = document.getElementById(id);
-    let qtyInput = document.getElementById(id + "Qty");
+    let qty = parseInt(document.getElementById(id + "Qty").value);
 
-    if (checkbox.checked) {
-        let qty = parseInt(qtyInput.value);
-
-        if (!qty || qty <= 0) return;
-
-        let price = prices[id] * qty;
-
+    if (checkbox.checked && qty > 0) {
         cart.push({
-            name: name,
-            qty: qty,
-            price: price
+            name,
+            qty,
+            price: prices[id] * qty
         });
     }
 }
 
-/* =========================
-   STEP 2: UPDATE CART UI
-========================= */
+/* UPDATE CART */
 function updateCart() {
-    let cartList = document.getElementById("cartItems");
+    let list = document.getElementById("cartItems");
     let total = 0;
 
-    cartList.innerHTML = "";
+    list.innerHTML = "";
 
-    cart.forEach(item => {
+    cart.forEach(i => {
         let li = document.createElement("li");
-        li.textContent = item.name + " x" + item.qty + " = $" + item.price;
-        cartList.appendChild(li);
-        total += item.price;
+        li.textContent = `${i.name} x${i.qty} = $${i.price}`;
+        list.appendChild(li);
+        total += i.price;
     });
 
     document.getElementById("totalPrice").textContent = "Total: $" + total;
 }
 
-/* =========================
-   STEP 3: SHOW SECTIONS
-========================= */
-function showSection(sectionId) {
-    let sections = document.querySelectorAll('.content');
-    sections.forEach(sec => sec.style.display = 'none');
-
-    document.getElementById(sectionId).style.display = 'block';
-}
-
-/* =========================
-   STEP 4: SEND TO BACKEND
-========================= */
-function sendOrderToBackend(orderData) {
-    fetch("https://creameryapp.onrender.com/orders",{
+/* SEND TO BACKEND */
+function sendOrderToBackend(data) {
+    fetch("https://creameryapp.onrender.com/orders", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            items: orderData,
-            total: orderData.reduce((sum, item) => sum + item.price, 0),
+            items: data,
+            total: data.reduce((s, i) => s + i.price, 0),
             time: new Date()
         })
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Saved to backend:", data);
-    })
-    .catch(err => {
-        console.error("Error sending order:", err);
     });
 }
 
-/* =========================
-   STEP 5: MAIN ORDER FUNCTION
-========================= */
+/* SUBMIT ORDER */
 function submitOrder() {
 
-    // reset cart every time
     cart = [];
 
-    // build cart
-    addItem('milk', 'Milk');
-    addItem('icecream', 'Ice Cream');
-    addItem('cheese', 'Cheese');
-    addItem('yogurt', 'Yogurt');
-    addItem('sandwich', 'Sandwich');
+    addItem("milk", "Milk");
+    addItem("icecream", "Ice Cream");
+    addItem("cheese", "Cheese");
+    addItem("yogurt", "Yogurt");
+    addItem("sandwich", "Sandwich");
 
     if (cart.length === 0) {
-        alert("Please select at least one item");
+        alert("Select items first");
         return;
     }
 
-    // update UI
     updateCart();
-
-    // send to backend
     sendOrderToBackend(cart);
 
-    alert("Order submitted to backend!");
-    showSection('cart');
+    alert("Order submitted!");
+    showSection("cart");
 }
+
+/* LOAD ORDERS */
 function loadOrders() {
-    fetch("https://creameryapp.onrender.com")
+    fetch("https://creameryapp.onrender.com/orders")
     .then(res => res.json())
     .then(data => {
-        let cartList = document.getElementById("cartItems");
-        cartList.innerHTML = "";
 
-        data.forEach((order, index) => {
+        let list = document.getElementById("previousOrders");
+        list.innerHTML = "";
+
+        if (data.length === 0) {
+            list.innerHTML = "<li>No orders yet</li>";
+            return;
+        }
+
+        data.forEach((order, i) => {
+
+            let items = order.items
+                .map(x => `${x.name} x${x.qty}`)
+                .join(", ");
+
             let li = document.createElement("li");
-            li.textContent = 
-                "Order " + (index + 1) + " | Total: $" + order.total;
-            cartList.appendChild(li);
+            li.textContent = `Order ${i+1}: ${items} | Total $${order.total}`;
+
+            list.appendChild(li);
         });
-    })
-    .catch(err => {
-        console.error("Error loading orders:", err);
     });
 }
-/* =========================
-   STEP 6: DEFAULT VIEW
-========================= */
-showSection('about');
+
+/* DEFAULT PAGE */
+showSection("about");
 
 </script>
 
