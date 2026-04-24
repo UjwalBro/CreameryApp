@@ -173,7 +173,7 @@ function showSection(sectionId) {
    STEP 4: SEND TO BACKEND
 ========================= */
 function sendOrderToBackend(orderData) {
-    fetch("http://localhost:3000/orders", {
+    fetch("https://creameryapp.onrender.com/orders",{
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -223,7 +223,7 @@ function submitOrder() {
     showSection('cart');
 }
 function loadOrders() {
-    fetch("http://localhost:3000/orders")
+    fetch("https://creameryapp.onrender.com")
     .then(res => res.json())
     .then(data => {
         let cartList = document.getElementById("cartItems");
